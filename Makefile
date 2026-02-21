@@ -3,37 +3,67 @@ CC = gcc
 CXX = g++
 CFLAGS = -Iexternal/gl/glad/include -Iexternal/gl -Wall -O2
 CXXFLAGS = $(CFLAGS)
-LDFLAGS = -static-libgcc -static-libstdc++
-LIBS = external/gl/glfw/lib/libglfw3.a
+LDFLAGS = 
 
 # Directories
 SRC_DIRS = src external/gl/glad/src
 OBJ_DIR = obj
 BIN_DIR = bin
-TARGET = $(BIN_DIR)/pixl-engine
+WINDOWS_TARGET = $(BIN_DIR)/pixl-engine-windows
+LINUX_TARGET   = $(BIN_DIR)/pixl-engine-linux
 
-# Find all source files
+# Source files
 C_SOURCES = $(foreach dir,$(SRC_DIRS),$(wildcard $(dir)/*.c))
 CPP_SOURCES = $(foreach dir,$(SRC_DIRS),$(wildcard $(dir)/*.cpp))
-OBJ_FILES = $(patsubst %.c,$(OBJ_DIR)/%.o,$(C_SOURCES)) $(patsubst %.cpp,$(OBJ_DIR)/%.o,$(CPP_SOURCES))
 
-# Ensure obj and bin directories exist
-$(shell mkdir -p $(OBJ_DIR) $(BIN_DIR))
+WINDOWS_OBJS = $(patsubst %.c,$(OBJ_DIR)/windows/%.o,$(C_SOURCES)) \
+               $(patsubst %.cpp,$(OBJ_DIR)/windows/%.o,$(CPP_SOURCES))
+LINUX_OBJS   = $(patsubst %.c,$(OBJ_DIR)/linux/%.o,$(C_SOURCES)) \
+               $(patsubst %.cpp,$(OBJ_DIR)/linux/%.o,$(CPP_SOURCES))
 
-# Default target
-all: $(TARGET)
+# Windows libraries
+WINDOWS_LIBS = external/gl/glfw/lib/libglfw3.a -lgdi32 -luser32 -lopengl32 -limm32 -lole32 -loleaut32 -luuid -lwinmm -lshell32
+# Linux libraries
+LINUX_LIBS = -lglfw -ldl -lGL -lm -lpthread
 
-# Link target
-$(TARGET): $(OBJ_FILES)
-	$(CXX) $(LDFLAGS) $^ -o $@ $(LIBS)
+# Ensure obj/bin directories exist
+$(shell mkdir -p $(OBJ_DIR)/windows $(OBJ_DIR)/linux $(BIN_DIR))
 
-# Compile C files
-$(OBJ_DIR)/%.o: %.c
+# Default target: just list available builds
+all:
+	@echo "Available targets:"
+	@echo "  make windows_nt   # Build for Windows (MinGW)"
+	@echo "  make linux64     # Build for Linux 64-bit"
+
+# Windows build
+windows_nt: $(WINDOWS_TARGET)
+
+$(WINDOWS_TARGET): $(WINDOWS_OBJS)
+	$(CXX) $(LDFLAGS) $^ -o $@ $(WINDOWS_LIBS)
+
+# Compile C files for Windows
+$(OBJ_DIR)/windows/%.o: %.c
 	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-# Compile C++ files
-$(OBJ_DIR)/%.o: %.cpp
+# Compile C++ files for Windows
+$(OBJ_DIR)/windows/%.o: %.cpp
+	@mkdir -p $(dir $@)
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+# Linux build
+linux64: $(LINUX_TARGET)
+
+$(LINUX_TARGET): $(LINUX_OBJS)
+	$(CXX) $(LDFLAGS) $^ -o $@ $(LINUX_LIBS)
+
+# Compile C files for Linux
+$(OBJ_DIR)/linux/%.o: %.c
+	@mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+# Compile C++ files for Linux
+$(OBJ_DIR)/linux/%.o: %.cpp
 	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
@@ -41,4 +71,4 @@ $(OBJ_DIR)/%.o: %.cpp
 clean:
 	rm -rf $(OBJ_DIR) $(BIN_DIR)
 
-.PHONY: all clean
+.PHONY: all clean windows_nt linux64
