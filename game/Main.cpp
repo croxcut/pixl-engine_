@@ -1,7 +1,6 @@
 #include <glad/glad.h>
 #include <glfw/glfw3.h>
 #include <stdio.h>
-#include <Hello.h>
 
 int main(void) {
     
@@ -9,8 +8,6 @@ int main(void) {
         printf("Not initialized");
     else
         printf("GLFW initialized!\n");
-    
-    add();
     
     return 0;
 }

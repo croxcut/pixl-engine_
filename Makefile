@@ -5,21 +5,29 @@ CFLAGS = -Iexternal/gl/glad/include -Iexternal/gl -Ipixl -Wall -O2
 CXXFLAGS = $(CFLAGS)
 LDFLAGS = 
 
-# Directories
-PIXL_DIRS = pixl external/gl/glad/src $(GAME_DIR)
-GAME_DIR = game
+# Directories (base directories to search)
+BASE_DIRS = pixl core drivers external scene server game misc
 OBJ_DIR = obj
 BIN_DIR = bin
 WINDOWS_TARGET = $(BIN_DIR)/pixl-windowsnt
 LINUX_TARGET   = $(BIN_DIR)/pixl-linux64
 
+# Recursive function to get all subdirectories
+rwildcard = $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2) $(d))
+
+# Get all subdirectories recursively from base directories
+ALL_SUBDIRS = $(filter-out %/.git %/.svn %/CVS,$(foreach dir,$(BASE_DIRS),$(call rwildcard,$(dir)/,)))
+
+# Combine base dirs with all subdirs and remove duplicates
+PIXL_DIRS = $(sort $(BASE_DIRS) $(ALL_SUBDIRS))
+
 # Source files
-define rwildcard
-$(wildcard $1$2) $(foreach d,$(wildcard $1*/),$(call rwildcard,$d,$2))
+define rwildcard_src
+$(wildcard $1$2) $(foreach d,$(wildcard $1*/),$(call rwildcard_src,$d,$2))
 endef
 
-C_SOURCES  := $(foreach dir,$(PIXL_DIRS),$(call rwildcard,$(dir)/,*.c))
-CPP_SOURCES:= $(foreach dir,$(PIXL_DIRS),$(call rwildcard,$(dir)/,*.cpp))
+C_SOURCES  := $(foreach dir,$(PIXL_DIRS),$(call rwildcard_src,$(dir)/,*.c))
+CPP_SOURCES:= $(foreach dir,$(PIXL_DIRS),$(call rwildcard_src,$(dir)/,*.cpp))
 
 WINDOWS_OBJS = $(patsubst %.c,$(OBJ_DIR)/windows/%.o,$(C_SOURCES)) \
                $(patsubst %.cpp,$(OBJ_DIR)/windows/%.o,$(CPP_SOURCES))
