@@ -1,6 +1,6 @@
 # Pixl Engine author
 
-Pixl Engine is my year's long hobby project, experementing from a simple software 2D renderer to a full 3D rendering engine. 
+Pixl Engine is my year's long hobby project, experimenting from a simple software 2D renderer to a full 3D rendering engine. 
 
 It's been almost 2 years and little progress had beeng done since im busy with completing my academic duties.
 
