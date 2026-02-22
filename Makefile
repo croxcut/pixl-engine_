@@ -1,7 +1,7 @@
 # Compiler and flags
 CC = gcc
 CXX = g++
-CFLAGS = -Iexternal/gl/glad/include -Iexternal/gl -Ipixl -Wall -O2
+CFLAGS = -I. -Iexternal/gl/glad/include -Iexternal/gl -Ipixl -Wall -O2
 CXXFLAGS = $(CFLAGS)
 LDFLAGS = 
 
@@ -45,11 +45,11 @@ $(shell mkdir -p $(OBJ_DIR)/windows $(OBJ_DIR)/linux $(BIN_DIR))
 # Default target: just list available builds
 all:
 	@echo "Available targets:"
-	@echo "  make windows_nt   # Build for Windows (MinGW)"
-	@echo "  make linux64     # Build for Linux 64-bit"
+	@echo "  make win_nt   # Build for Windows (MinGW)"
+	@echo "  make lnx_64   # Build for Linux 64-bit"
 
 # Windows build
-windows_nt: $(WINDOWS_TARGET)
+win_nt: $(WINDOWS_TARGET)
 
 $(WINDOWS_TARGET): $(WINDOWS_OBJS)
 	$(CXX) $(LDFLAGS) $^ -o $@ $(WINDOWS_LIBS)
@@ -65,7 +65,7 @@ $(OBJ_DIR)/windows/%.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 # Linux build
-linux64: $(LINUX_TARGET)
+lnx_64: $(LINUX_TARGET)
 
 $(LINUX_TARGET): $(LINUX_OBJS)
 	$(CXX) $(LDFLAGS) $^ -o $@ $(LINUX_LIBS)
@@ -84,4 +84,4 @@ $(OBJ_DIR)/linux/%.o: %.cpp
 clean:
 	rm -rf $(OBJ_DIR) $(BIN_DIR)
 
-.PHONY: all clean windows_nt linux64
+.PHONY: all clean win_nt lnx_64
